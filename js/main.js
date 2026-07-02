@@ -25,7 +25,7 @@ export function init(){
     ThreeCanvasWidth = viewContainer.clientWidth || window.innerWidth * 0.6;
     ThreeCanvasHeight = viewContainer.clientHeight || window.innerHeight * 0.7;
     
-    renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer({ antialias: false });
     renderer.setSize( ThreeCanvasWidth, ThreeCanvasHeight);
     viewContainer.appendChild( renderer.domElement );
 
@@ -55,6 +55,9 @@ function changeMode(event){
     selectedMode = event.target.value;
 
     if(volume == null) return;
+    if (histogram) {
+        histogram.clearBalls();
+    }
     
     
     if (selectedMode === "MIP") {
@@ -149,7 +152,7 @@ async function resetVis(){
             1000 // Far 
         );
     camera.up.set(0, 0, -1); 
-    camera.position.set(0, 5, 10);
+    camera.position.set(0,-volume.width,0);
 
     controls = new OrbitControls(camera, renderer.domElement);
 

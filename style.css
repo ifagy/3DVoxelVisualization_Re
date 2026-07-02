@@ -1,38 +1,38 @@
-/* Sayfa boşluklarını sıfırla ve kaydırmayı engelle */
+
 html, body {
     margin: 0;
     padding: 0;
     width: 100vw;
     height: 100vh;
-    overflow: hidden; /* Sayfanın taşmasını engeller */
+    overflow: hidden; 
     font: 14px sans-serif;
     color: white;
     background-color: black;
 }
 
-/* Üstteki yükleme ve mod seçimi alanı */
+
 p, select {
     margin: 10px;
 }
 
-/* Ana taşıyıcı - kalan tüm dikey alanı kaplasın */
+
 .container {
     display: flex;
     width: 100vw;
-    height: calc(100vh - 80px); /* Üst bardaki elemanların yüksekliğini düşüyoruz */
+    height: calc(100vh - 80px); 
     box-sizing: border-box;
     padding: 10px;
-    gap: 15px; /* Elemanlar arası temiz bir boşluk */
+    gap: 15px;
 }
 
-/* 3D Sahnenin olduğu sol taraf */
+
 #viewContainer {
     flex: 2;
     width: 100%;
     height: 100%;
 }
 
-/* Histogram ve butonların olduğu sağ taraf */
+
 #tfContainer {
     flex: 1;
     display: flex;
@@ -40,10 +40,10 @@ p, select {
     height: 100%;
 }
 
-/* Histogram SVG'si içindeki alanı kaplasın */
+
 #histogram {
     width: 100%;
-    height: 80%; /* Butonlara yer kalsın */
+    height: 80%; 
 }
 
 #ballPopulation {

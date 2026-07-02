@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as d3 from 'd3';
 export class Histogram {
     constructor(_config, _data){
         this.config= {
@@ -134,6 +135,10 @@ export class Histogram {
         vis.selectionBalls = vis.chart.append("g").attr("class", "col-balls");
    
         d3.select("#addBall").on("click", () => { 
+
+            if(d3.select("#renderMode").property("value")==="MIP" && vis.balls.length > 1) return;
+            if (vis.balls.length >= 5) return;
+
             d3.selectAll(".col-ball").attr("stroke", "none");
             
             activeBallElement = vis.selectionBalls.append("circle").
@@ -276,6 +281,20 @@ export class Histogram {
     getBalls(){
         return this.balls;
     }
+
+    clearBalls() {
+    let vis = this;
+    
+    
+    if (vis.selectionBalls) {
+        vis.selectionBalls.selectAll(".col-ball").remove();
+    }
+    
+    
+    vis.balls = [];
+    
+    d3.select("#addBall").dispatch("click");
+}
 
 }
 
