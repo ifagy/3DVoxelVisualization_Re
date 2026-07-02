@@ -287,18 +287,21 @@ export class Histogram {
     }
 
     clearBalls() {
-    let vis = this;
-    
-    
-    if (vis.selectionBalls) {
-        vis.selectionBalls.selectAll(".col-ball").remove();
+        let vis = this;
+        
+        
+        if (vis.selectionBalls) {
+            vis.selectionBalls.selectAll(".col-ball").remove();
+        }
+
+
+        vis.balls = [];
+
+        d3.select("#addBall").dispatch("click");
     }
+
     
-    
-    vis.balls = [];
-    
-    d3.select("#addBall").dispatch("click");
-}
+
 
 }
 

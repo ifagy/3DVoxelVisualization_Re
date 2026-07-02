@@ -116,6 +116,8 @@ function createVolume(uint16Array) {
         voxels[i] = rawVoxels[i] / 4095.0;
     }
 
+    uint16Array = null;
+    
     console.log(voxels.length + " voxels loaded - ["
         + width + ", " + height + ", " + depth + "], max: " + max);
 
@@ -239,3 +241,4 @@ function clean() {
 
     
 }
+
