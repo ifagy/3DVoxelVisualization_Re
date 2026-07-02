@@ -136,7 +136,7 @@ export class Histogram {
    
         d3.select("#addBall").on("click", () => { 
 
-            if(d3.select("#renderMode").property("value")==="MIP" && vis.balls.length > 1) return;
+            if(d3.select("#renderMode").property("value")==="MIP" && vis.balls.length >= 1) return;
             if (vis.balls.length >= 5) return;
 
             d3.selectAll(".col-ball").attr("stroke", "none");
@@ -148,6 +148,7 @@ export class Histogram {
                 attr("fill", "#ffffff").
                 attr("stroke", "white").
                 attr("stroke-width", "3").
+                style("cursor", "pointer").
                 call(vis.dragBehavior);
             
                 const newBall = {
@@ -164,6 +165,8 @@ export class Histogram {
 
 
         d3.select("#removeBall").on("click", () => {
+            if (vis.balls.length == 1) return;
+
             if (activeBallElement) { 
                 activeBallElement.remove();
                 
@@ -193,6 +196,7 @@ export class Histogram {
             attr("cy", 0).               
             attr("r", 10).
             attr("fill", d => d).
+            style("cursor", "pointer").
             on("click", function(event,d){
                 if (activeBallElement && activeBall) { 
                     activeBallElement.attr("fill", d);

@@ -17,8 +17,6 @@
     </script>
     
 
-    <script src="d3/d3.v7.js"></script>
-
     <script type="module">
         import { init } from './js/main.js';
         window.addEventListener('DOMContentLoaded', init);
@@ -31,7 +29,11 @@
     
 
     
-    <p>upload voxel data here: <input id="upload" type="file"></p>
+    <p class="upload-container">
+        <label for="upload">Upload Voxel Data:</label>
+        <input id="upload" type="file" accept=".dat,.raw,.bin">
+        <span class="file-info">(Expected: .dat / [W, H, D] + Uint16 raw voxels)</span>
+    </p>
     
     <select id="renderMode">
         <option value="MIP">MIP (Maximum Intensity)</option>

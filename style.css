@@ -54,3 +54,48 @@ p, select {
     fill: #00ffff;
     font-size: 11px;
 }
+select, input[type="file"] {
+    background-color: #242424;
+    color: #eaeaea;
+    border: 1px solid #444;
+    padding: 6px 12px;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+}
+
+#addBall, #removeBall {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%; 
+    font-weight: bold;
+    font-size: 12px;
+    color: #eaeaea;
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Upload konteyneri için esnek yerleşim */
+.upload-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 20px;
+    font-size: 14px;
+}
+
+/* Upload yazısı etiketi */
+.upload-container label {
+    font-weight: 500;
+    color: #cccccc;
+}
+
+/* Beklenen data formatı açıklaması */
+.file-info {
+    font-size: 12px;
+    color: #888888; /* Hafif sönük, göz yormayan bir gri */
+    font-style: italic;
+    margin-left: 5px;
+}
