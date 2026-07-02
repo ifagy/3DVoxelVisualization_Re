@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3D VOXEL</title>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    
+    <script src="three_js/OrbitControls.js"></script>
+    <script src="three_js/three.js"></script>
+    <script src="d3/d3.v7.js"></script>
+
+    <script src="js/main.js"></script>
+
+</head>
+
+
+<body onload="init()">
+
+    
+
+    
+    <p>upload voxel data here: <input id="upload" type="file"></p>
+    
+    <select id="renderMode">
+        <option value="MIP">MIP (Maximum Intensity)</option>
+        <option value="ISO">ISO (First-Hit Compositing)</option>
+    </select>
+
+    <div class="container">
+
+        
+        <div id="viewContainer"></div>
+
+        
+        <div id="tfContainer">
+            <svg id="histogram"></svg>
+        </div>
+
+        <div id="ballPopulation">
+            <button id="addBall">+</button>
+            <button id="removeBall">-</button>
+        </div>
+
+
+    </div>
+
+    
+
+
+
+</body>
+
+
+</html>
