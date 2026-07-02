@@ -6,17 +6,26 @@
 
     <link rel="stylesheet" type="text/css" href="style.css">
 
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
     
-    <script src="three_js/OrbitControls.js"></script>
-    <script src="three_js/three.js"></script>
+
     <script src="d3/d3.v7.js"></script>
 
-    <script src="js/main.js"></script>
+    <script type="module">
+        import { init } from './js/main.js';
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
 
 </head>
 
-
-<body onload="init()">
+<body>
 
     
 

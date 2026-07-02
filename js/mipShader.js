@@ -1,8 +1,7 @@
-class MipShader {
+import * as THREE from 'three';
+export class MipShader {
     constructor(volume) {
         
-        this.vertexProgram = "mip_vert";
-        this.fragmentProgram = "mip_frag";
 
         
         const texture = new THREE.Data3DTexture(volume.voxels, volume.width, volume.height, volume.depth);
@@ -19,8 +18,13 @@ class MipShader {
             uniforms: {
                 u_texture: {value: texture},
                 u_scale: {value: volume.scale},
-                u_ballCount: {value: null},
-                u_balls: {value: null}
+                u_ballCount: {value: 0},
+                u_balls: {value: [...Array(5)].map(() => ({ 
+                        iso: 0.5, 
+                        transparency: 1.0, 
+                        color: new THREE.Color("#ffffff") 
+                    }))
+                }
 
             },
             defines: { MODE_MIP: true },
@@ -45,8 +49,8 @@ class MipShader {
         try {
             
             const [vertText, fragText] = await Promise.all([
-                loadShader(`shaders/${this.vertexProgram}.essl`),
-                loadShader(`shaders/${this.fragmentProgram}.essl`)
+                loadShader(`shaders/vert.essl`),
+                loadShader(`shaders/frag.essl`)
             ]);
 
             

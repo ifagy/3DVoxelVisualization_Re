@@ -1,10 +1,29 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { MipShader } from './mipShader.js';
+import { Histogram } from './histogram.js';
 
 
-function init(){
+
+
+let volume = null;
+let renderer, scene, camera, controls;
+let mipShader = null;
+let histogram = null;
+let fileInput, renderMode;
+let selectedMode = "MIP"; 
+
+
+let ThreeCanvasWidth, ThreeCanvasHeight;
+let animationFrameID = null;
+
+
+
+export function init(){
 
     let viewContainer= document.getElementById("viewContainer");
-    ThreeCanvasWidth = window.innerWidth * 0.7;
-    ThreeCanvasHeight = window.innerHeight * 0.7;
+    ThreeCanvasWidth = viewContainer.clientWidth || window.innerWidth * 0.6;
+    ThreeCanvasHeight = viewContainer.clientHeight || window.innerHeight * 0.7;
     
     renderer = new THREE.WebGLRenderer();
     renderer.setSize( ThreeCanvasWidth, ThreeCanvasHeight);
@@ -15,7 +34,12 @@ function init(){
     fileInput.addEventListener('change', readFile);
 
     //histogram init
-    histogram = new Histogram({ parentElement: "#histogram" });
+    let tfContainer = document.getElementById("tfContainer");
+    histogram = new Histogram({ 
+        parentElement: "#histogram",
+        containerWidth: tfContainer.clientWidth || 400,
+        containerHeight: tfContainer.clientHeight * 0.8 || 300
+    });
 
     //mode dropdown
     renderMode = document.getElementById("renderMode");
@@ -30,24 +54,18 @@ function changeMode(event){
 
     selectedMode = event.target.value;
 
-    if(mipShader == null) return;
+    if(volume == null) return;
     
-    mipShader = new MipShader(volume);
     
     if (selectedMode === "MIP") {
-        mipShader.material.defines = {
-            MODE_MIP: true
-        };
+        mipShader.material.defines = { MODE_MIP: true, MODE_ISO: false };
     } 
     else if (selectedMode === "ISO") {
-        mipShader.material.defines = {
-            MODE_ISO: true
-        };
+        mipShader.material.defines = { MODE_MIP: false, MODE_ISO: true };
     }
 
     mipShader.material.needsUpdate = true;
-    resetVis();
-
+    
 }
 
 function readFile(){
@@ -126,18 +144,25 @@ async function resetVis(){
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(
             75, // FOV 
-            THREEinnerWidth / ThreeCanvasHeight , // Aspect Ratio
+            ThreeCanvasWidth / ThreeCanvasHeight , // Aspect Ratio
             0.1, // Near 
             1000 // Far 
         );
+    camera.up.set(0, 0, -1); 
     camera.position.set(0, 5, 10);
 
     controls = new OrbitControls(camera, renderer.domElement);
 
     controls.target.set(0, 0, 0); 
-    controls.enableDamping = true; 
-    controls.dampingFactor = 0.05;
-    controls.enableZoom = true; 
+
+    controls.minDistance = volume.max; 
+    controls.maxDistance = volume.max * 4;
+    controls.zoomSpeed = 5.;
+
+
+
+
+    controls.update();
 
  
 
@@ -152,6 +177,7 @@ async function resetVis(){
     //center check
     const boundingBox = new THREE.Box3().setFromObject(mipMesh);
     console.log("Mesh diagonal", boundingBox);
+    
 
     // init paint loop
     animationFrameID = requestAnimationFrame(paint);
@@ -161,9 +187,12 @@ async function resetVis(){
  * Render the scene and update all necessary shader information.
  */
 function paint(){
-    if (volume) {
+
+    if (controls) controls.update();
+
+    if (volume && mipShader) {
         let balls = histogram.getBalls();
-        mipShadder.material.uniforms.u_ballcCount.value = balls.length;
+        mipShader.material.uniforms.u_ballCount.value = balls.length;
         
 
         balls = [...Array(5)].map((_, i) => 
@@ -171,7 +200,7 @@ function paint(){
             );
 
         
-        mipShadder.material.uniforms.u_balls.value = balls;
+        mipShader.material.uniforms.u_balls.value = balls;
 
         renderer.render(scene, camera);
          
