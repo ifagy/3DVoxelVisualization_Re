@@ -1,0 +1,192 @@
+#ifndef GL_ES
+#version 330 es
+#endif
+
+precision highp float;
+precision highp sampler3D;
+
+
+uniform sampler3D u_texture;             //data
+uniform vec3 u_scale;
+
+struct Ball{
+    float iso;
+    float transparency;
+    vec3 color;
+
+};
+
+uniform Ball u_balls[5];
+uniform int u_ballCount;
+
+in vec3 vUv;                             //curren internal pixel cordinates of shape 0-1
+in vec3 vWorldPos;                       //current cordinates of shape wr World xyz
+
+out vec4 fragColor;
+
+const int MAX_STEPS = 4242; 
+const vec3 bBoxMin = vec3(-0.5, -0.5, -0.5);
+const vec3 bBoxMax = vec3(0.5, 0.5, 0.5);
+
+vec2 intersection(vec3 rayDir) {
+    vec3 tx1 = (bBoxMin * u_scale - cameraPosition) * (1.0/rayDir);
+    vec3 tx2 = (bBoxMax * u_scale - cameraPosition) * (1.0/rayDir);
+
+    vec3 tmin = min(tx1,tx2);
+    vec3 tmax = max(tx1,tx2);
+
+    float tmin_f = max(max(tmin.x, tmin.y), tmin.z);
+    float tmax_f = min(min(tmax.x, tmax.y), tmax.z);
+
+    return vec2(tmin_f,tmax_f);
+}
+
+void main() {
+
+    
+    vec3 rayDir =normalize(vWorldPos - cameraPosition);
+    vec2 t_intersec = intersection(rayDir);
+    float tmin = t_intersec.x;
+    float tmax = t_intersec.y;
+
+    if(tmin > tmax || tmin < 0.0) discard;
+    float t = max(tmin, 0.0);
+
+    //feedback adaptive
+
+    vec3 absRayDir = abs(rayDir);    
+    float mostConstrainedAxis = max(absRayDir.x, max(absRayDir.y, absRayDir.z)); //I hope it is
+    float stepSize = 1.0 / mostConstrainedAxis;
+
+    // MIP RENDER -----------------------
+    #ifdef MODE_MIP
+        float maxIntensity = 0.0;
+        
+        //float stepSize = (tmax - t) / float(MAX_STEPS);
+
+        
+
+    
+        for(int i=0 ; i < MAX_STEPS ; i++){
+
+
+            if(t > tmax) break;
+            //feedback
+            if(maxIntensity >= 0.99) break; 
+        
+
+            vec3 currentWoPos = cameraPosition + (rayDir * t);
+            vec3 normalizedCurrPos = (currentWoPos / u_scale) + 0.5;
+            float intensity = texture(u_texture, normalizedCurrPos).r;
+
+            if(intensity>maxIntensity){
+                maxIntensity=intensity;
+            }
+
+            t += stepSize; 
+
+        }
+
+        fragColor = vec4(vec3(maxIntensity) * u_balls[0].color, 1);
+    #endif
+
+    //ISO RENDER -----------------------------
+    #ifdef MODE_ISO
+
+
+  
+        float lastIntensity = 0.0;
+        float currentIntensity = 0.0;
+
+        //Accumulate / α-Compositing
+        float Aacc = 0.0;
+        vec3 Cacc = vec3(0.0);
+
+        for(int i=0 ; i < MAX_STEPS ; i++){
+            
+            if(t > tmax) break;
+
+            if(Aacc >= 0.99) break;
+
+             
+            vec3 currentWoPos = cameraPosition + (rayDir * t);
+            vec3 normalizedCurrPos = (currentWoPos / u_scale) + 0.5;
+            lastIntensity = currentIntensity;
+            currentIntensity = texture(u_texture, normalizedCurrPos).r;
+
+
+            for(int j=0 ; j<5 ; j++){
+
+                if(j>=u_ballCount) break;
+                
+                float isoValue = u_balls[j].iso; 
+
+            
+                if(lastIntensity <= isoValue && isoValue<currentIntensity){
+                    //interpolate position illuison
+                    vec3 normalizedLastPos = normalizedCurrPos - ((rayDir*stepSize)/ u_scale );
+                    float mixRate = (isoValue - lastIntensity) / (currentIntensity - lastIntensity);
+                    vec3 interpolatedPos = mix(normalizedLastPos, normalizedCurrPos, mixRate);  
+
+                    //gradientVektor
+                    vec3 epsilon = 1.0 / (u_scale);
+
+                    float gx = texture(u_texture, interpolatedPos + vec3(-epsilon.x,0.0,0.0)).r -  
+                                texture(u_texture, interpolatedPos + vec3(epsilon.x,0.0,0.0)).r;
+                    float gy = texture(u_texture, interpolatedPos + vec3(0.0,-epsilon.y,0.0)).r - 
+                                texture(u_texture, interpolatedPos + vec3(0.0,epsilon.y,0.0)).r;
+                    float gz = texture(u_texture, interpolatedPos + vec3(0.0,0.0,-epsilon.z)).r -  
+                                texture(u_texture, interpolatedPos + vec3(0.0,0.0,epsilon.z)).r;
+                    vec3 normalVec = normalize(vec3(gx,gy,gz)); 
+
+                    //blinn phong
+                    vec3 lightPos = cameraPosition + vec3(1.0, 2.0, 0.0);
+                    vec3 lightDir   = normalize(lightPos - currentWoPos);
+                    vec3 viewDir    = -rayDir;
+
+                    vec3 Ka = u_balls[j].color;
+                    vec3 Ia = vec3(0.3);
+                    vec3 ambient = Ka * Ia;
+
+                    vec3 Kd = u_balls[j].color;
+                    vec3 Id = vec3(0.8);
+                    vec3 N = normalVec;
+                    vec3 L = lightDir;
+                    vec3 diffuse =  Id * Kd * max(0.0,dot(N,L));
+
+                    vec3 Ks = vec3(0.5);
+                    vec3 Is = vec3(1.0); //no shine
+                    //vec3 N = normalVec;
+                    vec3 V = viewDir;
+                    vec3 H = normalize(L + V); //halfway vector
+                    float n = 32.0; //shine
+                    vec3 specular = Ks * Is * ( pow(max(0.0,dot(N,H)), n));
+
+                    //Accumulate / α-Compositing
+                    float Ai = u_balls[j].transparency;
+                    vec3 Ci = vec3(ambient + diffuse + specular) * Ai;
+
+                    Cacc = Cacc + (1.0 - Aacc) * Ci;
+                    Aacc = Aacc + (1.0-Aacc) * Ai;
+                }
+            }
+            t += stepSize; 
+        }
+    
+
+        fragColor = vec4(Cacc, Aacc);
+
+
+    #endif
+}
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,14 @@
+
+#ifndef GL_ES
+#version 330 es
+#endif
+
+
+out vec3 vUv;
+out vec3 vWorldPos;
+
+void main() {
+    vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+    vUv = position + vec3(0.5);
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1);
+}
