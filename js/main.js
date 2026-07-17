@@ -45,6 +45,7 @@ export function init(){
     renderMode = document.getElementById("renderMode");
     renderMode.addEventListener('change', changeMode);
 
+    loadDefaultData();
 }
 
 /**
@@ -71,32 +72,47 @@ function changeMode(event){
     
 }
 
-function readFile(){
+function processVolume(data) {
+    console.log("data loaded: ");
+    volume = createVolume(data);
+
+    mipShader = new MipShader(volume);
+    if (selectedMode === "MIP") {
+        mipShader.material.defines = { MODE_MIP: true, MODE_ISO: false };
+    } else if (selectedMode === "ISO") {
+        mipShader.material.defines = { MODE_MIP: false, MODE_ISO: true };
+    }
+
+    mipShader.material.needsUpdate = true;
+
+    
+    histogram.data = volume.voxels;
+    histogram.updateVis();
+
+    resetVis();
+}
+
+
+
+function readFile() {
     let reader = new FileReader();
     reader.onloadend = function () {
-        console.log("data loaded: ");
-
         let data = new Uint16Array(reader.result);
-        volume = createVolume(data);
-
-        //mip ----------
-        mipShader = new MipShader(volume);
-        if (selectedMode === "MIP") {
-        mipShader.material.defines = {MODE_MIP: true};
-        } 
-        else if (selectedMode === "ISO") {
-        mipShader.material.defines = {MODE_ISO: true};
-        }
-
-        mipShader.material.needsUpdate = true;
-
-        histogram.data = volume.voxels;
-        histogram.updateVis();
-       
-
-        resetVis();
+        processVolume(data); 
     };
     reader.readAsArrayBuffer(fileInput.files[0]);
+}
+
+async function loadDefaultData() {
+    try {
+        const response = await fetch('../exampleData/head_256x256x224.dat');
+        const arrayBuffer = await response.arrayBuffer();
+        const data = new Uint16Array(arrayBuffer);
+        processVolume(data); 
+        console.log("Default example data loaded.");
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 // Volume class handling simple volume.dat files. 
