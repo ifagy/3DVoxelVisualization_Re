@@ -45,7 +45,7 @@ export function init(){
     renderMode = document.getElementById("renderMode");
     renderMode.addEventListener('change', changeMode);
 
-    //loadDefaultData();
+    loadDefaultData();
 }
 
 /**
@@ -105,7 +105,7 @@ function readFile() {
 
 async function loadDefaultData() {
     try {
-        const response = await fetch('../exampleData/head_256x256x224.dat');
+        const response = await fetch('./exampleData/head_256x256x224.dat');
         const arrayBuffer = await response.arrayBuffer();
         const data = new Uint16Array(arrayBuffer);
         processVolume(data); 
