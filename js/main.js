@@ -45,7 +45,7 @@ export function init(){
     renderMode = document.getElementById("renderMode");
     renderMode.addEventListener('change', changeMode);
 
-    loadDefaultData();
+    //loadDefaultData();
 }
 
 /**
@@ -111,7 +111,7 @@ async function loadDefaultData() {
         processVolume(data); 
         console.log("Default example data loaded.");
     } catch (error) {
-        console.error(error);
+        console.error("problem loadign dafault head",error);
     }
 }
 
